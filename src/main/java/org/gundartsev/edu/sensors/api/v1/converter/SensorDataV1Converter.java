@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 public class SensorDataV1Converter implements Converter<SensorDataDTO, SensorData> {
     @Override
     public SensorData convert(SensorDataDTO source) {
-        return SensorData.builder().level(source.getLevel()).time(source.getTime()))
+        return SensorData.builder().level(source.getLevel()).time(source.getTime()).build();
     }
 }
