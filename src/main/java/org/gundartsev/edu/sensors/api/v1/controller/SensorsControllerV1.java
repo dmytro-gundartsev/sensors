@@ -1,7 +1,7 @@
 package org.gundartsev.edu.sensors.api.v1.controller;
 
 import org.gundartsev.edu.sensors.api.v1.model.SensorDataDTO;
-import org.gundartsev.edu.sensors.domain.SensorData;
+import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.gundartsev.edu.sensors.measurements.service.ISensorMeasurementsRegistrar;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,8 @@ public class SensorsControllerV1 {
     )
     public Mono<Void> acceptMeasures(@PathVariable("uuid") UUID uuid, @RequestBody Mono<SensorDataDTO> sensorData) {
         return sensorData.doOnSuccess(data -> {
-                    SensorData sData = conversionService.convert(data, SensorData.class);
+                    MeasurementData sData = conversionService.convert(data, MeasurementData.class);
+                    sData.setUuid(uuid);
                     measurementsRegistrar.registerMeasurement(uuid, sData);
                 }
         ).then();

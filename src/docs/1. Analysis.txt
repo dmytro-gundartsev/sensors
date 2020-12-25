@@ -1,0 +1,43 @@
+############################################################
+# GAP analysis. Found GAPs + unclarities in the description:
+############################################################
+1. Sensor data transfer related:
+- From the requirement we have planned referential intensity of the measurements comming from 1 sensor = 1/minute.
+  Q1) Are the measurements coming from sensors are snapshot-based (regularly sent with some rate) or they are more like diff-based (so sent only if the value changes).
+     Additionally example of listing alerts response confuses, as it shows only 3 different measures for a timeframe more than 1 hour (=> diff based? as for snapshot-based it would 65 measures with probable repetitions of same values).
+  Q2) Is the referential measurement rate is a max one or a pessimistic-average. I mean can the sensor send measurements faster than 1/minute?
+- Let's imagine that we have our sensor not sending the data for some time (tech problems, stolen, removed).
+  Q3) Do we need to register those facts (se far we don't have any other operations described, which might cover those cases)?
+     If No - then we will have sensor's last status being seen through get sensor status request forever, even if it was stolen/removed 2 months ago.
+             also it's important for housekeeping of old/unused devices
+     If yes, then what have period of grace for those states after what period of time we will have UNKNOWN status and later - removed.
+- From the description of the Sensor status response we have 3 possible values: OK, WARN, ALERT.
+  Q4) Shouldn't we have UNKNOWN status (unknown) for those not sending data for some time (quetstion related to the question#3)
+2. Metrics related question.
+- The service is supposed to calculate max and avg of levels for last 30 days.
+  Q5) What is desired precision of the statistic (last 30 days)? I mean which time-granularity is acceptable? Coarse grained: for previous days gathered per-day basis; or fine-grained: per-minute basis; or something in the middle: per-hour?
+3. Listing alerts related questions:
+- In the description stated, that once the sensor reaches ALERT status it is supposed to store it. This does not correlate with the example of listing alerts, where one alert contains startTime, endTime and some measurements.
+  Problem: ambigous and scare of information from this description.
+- In the example for listing alerts we have list of measurements without any time references of their fixation + the time frame only for 3 measurements is 1h 5 minuts, which is quite big, so we may expect 65 values instead of 3.
+  Q6) Do we have all >2000 values stored for the sensor (as part of the alert) when it is in ALERT state or only difference of it? (I mean 2100, ..., 2100, 2200, .., 2100 are compacted to 2100, 2200, 2100 or not?)
+4. Performance/ request intensity related:
+ - From the description it is clearly seen the requirement for intensity of POST requests for measures (optimist: 100.000/m, pessimistic: 1.000.000/m).
+  Q7) What is the planned intensity of request of getting status/metrics/alerts?
+5. Reliability related:
+  Q8) In case of where unlikely disaster (worst case scenario for non-persistent parts of the service), which is timeframe of acceptable loses (last minute, last hour, last day)?
+
+######################################################################################################
+# Assumptions made on GAPs+ unclarities (as there is no way how to clarify them from the task issuer):
+######################################################################################################
+Q1: We assume that each sensor is to send the requests 1/minute (snapshot basis) with probably missing measurements in case of problems.
+Q2: There is no way how the sensor can send more measurements more often for timeframes with granularity less than 1 minute.
+Q3: We don't need to register the facts of sensor unavailability. Once the data got posted for a sensor - we start operating it forever.
+Q4: No UNKNOWN staus is needed as for assumption #3. The latestMeasurement status will be accessible throgh get sensor status for ever, even if it was updated last time months ago.
+   Not-nice assumptions (#3 and #4), but it's the only way to be compliant with the requirement of the set of statuses in sensor staus response.
+Q5: Desired/aceptable precision for statistic measurements: hourly.
+Q6: Within ALERT we suppose to store all >2000 levels of measurements received from the sensor in ALERT state.
+Q7: Planned intensity (comparing to POST requests for measures):
+    GET sensor status: 10 times lower;
+    GET metrics/alerts: 100 times lower.
+Q8: Tolerable lost of non-persistent data - for the last hour.

@@ -1,9 +1,9 @@
 package org.gundartsev.edu.sensors.measurements.service;
 
-import org.gundartsev.edu.sensors.domain.SensorData;
+import org.gundartsev.edu.sensors.domain.MeasurementData;
 
 import java.util.UUID;
 
 public interface ISensorMeasurementsRegistrar {
-    void registerMeasurement(UUID uuid, SensorData data);
+    void registerMeasurement(UUID uuid, MeasurementData data);
 }
