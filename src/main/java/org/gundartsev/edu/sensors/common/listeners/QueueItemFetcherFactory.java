@@ -1,5 +1,6 @@
 package org.gundartsev.edu.sensors.common.listeners;
 
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,8 @@ public class QueueItemFetcherFactory {
         this.bossGroupThreadCount = bossGroupThreadCount;
     }
 
-    public <T> QueueItemFetcher createFetcher(BlockingQueue<T> queue, Consumer<T> itemConsumer) {
-        return new QueueItemFetcher() {
+    public <T> IQueueItemFetcher createFetcher(BlockingQueue<T> queue, Consumer<T> itemConsumer) {
+        return new IQueueItemFetcher() {
             private ExecutorService bossThreadPool = Executors.newFixedThreadPool(bossGroupThreadCount);
             private boolean running = false;
 
@@ -34,8 +35,8 @@ public class QueueItemFetcherFactory {
                                 T data = queue.take();
                                 poolExecutor.execute(() -> itemConsumer.accept(data));
                             }
-                        } catch (InterruptedException e) {
-                           // nothing
+                        } catch (InterruptedException| HazelcastInstanceNotActiveException e) {
+                           running = false;
                         }
                     });
                 }

@@ -1,15 +1,23 @@
 package org.gundartsev.edu.sensors.domain;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class HourStatistic implements Serializable {
-    int measurementsCnt = 0;    // defensive reserve for measurements count in case >> 60 per hour
+    int hourUTCId = 0;
+    byte lastMinuteId = 0;
+    int lastValue = 0;
     float accAvgLevel = 0.0f;
-    int maxLevel = 0;
 
-    public void put(int level) {
-        measurementsCnt++;
-        maxLevel = Math.max(level, maxLevel);
-        accAvgLevel += (level - accAvgLevel) / measurementsCnt; // == (accAvgLevel * (measurementsCnt - 1) + level) / measurementsCnt
+    public HourStatistic(int hourUTCId, int lastValue) {
+        this.hourUTCId = hourUTCId;
+        this.lastValue = lastValue;
     }
+
+    public HourStatistic() {
+    }
+
+    int maxLevel = 0;
 }

@@ -1,4 +1,4 @@
-package org.gundartsev.edu.sensors.domain;
+package org.gundartsev.edu.sensors.domain.metrics;
 
 import lombok.Data;
 import lombok.Getter;
