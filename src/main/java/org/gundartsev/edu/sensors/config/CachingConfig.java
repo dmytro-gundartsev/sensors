@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CachingConfig {
     public static String SENSOR_STATUS_MAP = "sensorStatus";
+    public static String STATISTIC_RINGS_MAP = "statisticRingsMap";
     public static String SENSOR_DATA_MAP_VALUE = "sensorStatus";
     public static String INCOMING_DATA_QUEUE = "measurementsQueue";
     public static String ALERT_DATA_QUEUE = "alertEventQueue";
@@ -31,14 +32,21 @@ public class CachingConfig {
                 .setBackupCount(1)
                 .setEmptyQueueTtl(-1)
                 .setAsyncBackupCount(0);
-        MapConfig mapConfig = new MapConfig(SENSOR_STATUS_MAP)
+        MapConfig statisticRingMapConfig = new MapConfig(STATISTIC_RINGS_MAP)
+                //    mapConfig.mapStoreConfig.isEnabled = true
+                .setReadBackupData(false)
+                .setInMemoryFormat(InMemoryFormat.OBJECT)
+                .setAsyncBackupCount(1)
+                .setBackupCount(0);
+        MapConfig sensorStatusMapConfig = new MapConfig(SENSOR_STATUS_MAP)
                 //    mapConfig.mapStoreConfig.isEnabled = true
                 .setReadBackupData(false)
                 .setInMemoryFormat(InMemoryFormat.OBJECT)
                 .setAsyncBackupCount(1)
                 .setBackupCount(0);
         //mapConfig.mapStoreConfig.implementation = context.getBean("dataStoreMapStore")
-        config.addMapConfig(mapConfig);
+        config.addMapConfig(statisticRingMapConfig);
+        config.addMapConfig(sensorStatusMapConfig);
         config.addQueueConfig(measureQueueConf);
         config.addQueueConfig(alertQueueConf);
         config.addQueueConfig(statisticQueueConf);

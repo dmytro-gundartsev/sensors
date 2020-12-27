@@ -1,28 +1,31 @@
 package org.gundartsev.edu.sensors.domain.metrics;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Value;
+import org.springframework.lang.Nullable;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 @Data
-public class StatisticRing {
-    private static int ABSENT_MARKER_MAX = 0; // currently consider absence of value as "0" measurement
+public class StatisticRing implements Serializable {
+    private static int ABSENT_MARKER_MAX = -1; // currently consider absence of value as "0" measurement
     private static float ABSENT_MARKER_AVG = 0.0f; // currently consider absence of value as having "0.0" measurement
     private float[] avgLevels;
     private int[] maxLevels;
-    private int size;
+    private final int size;
     private int latestPeriodId = 0;
+    @Nullable
+    private StatisticValue latestValue;
 
-    @Getter
-    public static class StatisticValue {
-        private int maxValue = 0;
-        private float avgValue = 0.0f;
-    }
 
     public StatisticRing(int size) {
         this.size = size;
         avgLevels = new float[size];
         maxLevels = new int[size];
+        Arrays.fill(maxLevels, -1);
     }
 
     public void put(int periodId, StatisticValue value) {
@@ -42,35 +45,45 @@ public class StatisticRing {
     }
 
     private void clearFrame() {
-        avgLevels = new float[size];
-        maxLevels = new int[size];
+        Arrays.fill(avgLevels, 0.0f);
+        Arrays.fill(maxLevels, -1);
     }
 
     private void putData(int periodId, StatisticValue value) {
         int normalizedIdx = periodId % size;
         avgLevels[normalizedIdx] = value.getAvgValue();
         maxLevels[normalizedIdx] = value.getMaxValue();
+        latestValue = value;
     }
 
     private void fillGaps(int periodId) {
         for (int gapIdx = latestPeriodId + 1; gapIdx < periodId; gapIdx++) {
-            avgLevels[gapIdx] = ABSENT_MARKER_AVG;
-            avgLevels[gapIdx] = ABSENT_MARKER_AVG;
+            int idx = gapIdx % size;
+            avgLevels[idx] = ABSENT_MARKER_AVG;
+            maxLevels[idx] = ABSENT_MARKER_MAX;
         }
     }
 
-    public StatisticValue getStatistic(int currentPeriodId) {
-        StatisticValue value = new StatisticValue();
-        int boundaryPeriodId = currentPeriodId - size;
-        int statCnt = latestPeriodId - boundaryPeriodId + 1;
+    public StatisticValue getStatistic(int reportPeriodId) throws IllegalArgumentException {
+        if (reportPeriodId < latestPeriodId) {
+            throw new IllegalArgumentException("Reporting moment cannot be in the past comparing to the last received snapshot");
+        }
+        int startPeriodId = reportPeriodId - (size - 1);
         float accAvg = 0.0f;
-        if (boundaryPeriodId >= latestPeriodId) {
-            for (int idx = boundaryPeriodId; idx <= latestPeriodId; idx++) {
-                value.maxValue = Math.max(value.maxValue, this.maxLevels[idx]);
-                accAvg += avgLevels[idx];
+        int maxValue = 0;
+        int gapSlotsCnt = 0;
+        int totalSlots = 0;
+        for (int periodId = reportPeriodId; periodId >= startPeriodId; periodId--) {
+            int idx = periodId % size;
+            gapSlotsCnt++;
+            if (maxLevels[idx] > -1) {
+                maxValue = Math.max(maxValue, maxLevels[idx]);
+                accAvg = avgLevels[idx] * gapSlotsCnt;
+                totalSlots += gapSlotsCnt;
+                gapSlotsCnt = 0;
             }
         }
-        value.avgValue = accAvg / statCnt;
-        return value;
+        accAvg /= totalSlots; // get time
+        return new StatisticValue(maxValue, accAvg);
     }
 }

@@ -1,27 +1,31 @@
-package org.gundartsev.edu.sensors.common.listeners;
+package org.gundartsev.edu.sensors.common.mq.fetchers;
 
+import com.hazelcast.collection.IQueue;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 @Service
-public class QueueItemFetcherFactory {
+public class MessageFetcherFactory implements IMessageFetcherFactory {
     private ThreadPoolTaskExecutor poolExecutor;
     private byte bossGroupThreadCount;
+    private HazelcastInstance hkInstance;
 
-    public QueueItemFetcherFactory(ThreadPoolTaskExecutor poolExecutor, @Value("${bossGroup.threads.cnt:4}") Byte bossGroupThreadCount) {
+    public MessageFetcherFactory(ThreadPoolTaskExecutor poolExecutor, @Value("${bossGroup.threads.cnt:4}") Byte bossGroupThreadCount, HazelcastInstance hkInstance) {
         this.poolExecutor = poolExecutor;
         this.bossGroupThreadCount = bossGroupThreadCount;
+        this.hkInstance = hkInstance;
     }
 
-    public <T> IQueueItemFetcher createFetcher(BlockingQueue<T> queue, Consumer<T> itemConsumer) {
-        return new IQueueItemFetcher() {
+    public <T> IMessageFetcher<T> createFetcher(String queueName, Consumer<T> itemConsumer) {
+        IQueue<T> queue = hkInstance.getQueue(queueName);
+        return new IMessageFetcher<T>() {
             private ExecutorService bossThreadPool = Executors.newFixedThreadPool(bossGroupThreadCount);
             private boolean running = false;
 

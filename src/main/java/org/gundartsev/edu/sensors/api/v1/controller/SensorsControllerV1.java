@@ -2,7 +2,7 @@ package org.gundartsev.edu.sensors.api.v1.controller;
 
 import org.gundartsev.edu.sensors.api.v1.model.SensorDataDTO;
 import org.gundartsev.edu.sensors.api.v1.model.SensorStatusDTO;
-import org.gundartsev.edu.sensors.common.registrars.IQueueItemRegistrar;
+import org.gundartsev.edu.sensors.common.mq.registrars.IQueueItemRegistrar;
 import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.gundartsev.edu.sensors.domain.StatusData;
 import org.gundartsev.edu.sensors.status.ISensorStatusService;

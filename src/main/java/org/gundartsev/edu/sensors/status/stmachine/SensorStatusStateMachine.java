@@ -12,7 +12,7 @@ class SensorStatusStateMachine implements ISensorStatusStateMachine{
     public static final int DANGEROUS_CO2_LEVEL_THRESHOLD = 2000;
     public static final byte DISTRESS_LEVEL_CHANGE_COUNTER = 3;
 
-    private StatusData statusData;
+    private final StatusData statusData;
 
     public SensorStatusStateMachine(StatusData statusData) {
         this.statusData = statusData;

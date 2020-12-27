@@ -20,12 +20,18 @@ repositories {
 
 ext {
     hazelcastVersion = '4.1'
+    reactorLogbackVersion = '2.0.8.RELEASE'
+    reactorLogbackVersion = '2.0.8.RELEASE'
 }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     compileOnly 'org.projectlombok:lombok'
     compile "org.springframework.boot:spring-boot-starter-webflux"
     compile "com.hazelcast:hazelcast:${hazelcastVersion}"
+    compile "ch.qos.logback:logback-classic:1.2.3"
+    compile "ch.qos.logback.contrib:logback-json-classic:0.1.5"
+    compile "ch.qos.logback.contrib:logback-jackson:0.1.5"
+    compile "io.projectreactor:reactor-logback:${reactorLogbackVersion}"
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

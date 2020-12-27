@@ -1,4 +1,4 @@
-package org.gundartsev.edu.sensors.common.registrars;
+package org.gundartsev.edu.sensors.common.mq.registrars;
 
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
@@ -6,7 +6,7 @@ import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.springframework.stereotype.Service;
 
 @Service
-public class QueueRegistrarFactory {
+public class QueueRegistrarFactory implements IQueueRegistrarFactory {
     private final HazelcastInstance hkInstance;
     IQueue<MeasurementData> measurementQueue;
 

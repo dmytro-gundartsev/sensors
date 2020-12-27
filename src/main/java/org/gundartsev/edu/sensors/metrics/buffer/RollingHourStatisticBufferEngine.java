@@ -1,20 +1,17 @@
-package org.gundartsev.edu.sensors.metrics;
+package org.gundartsev.edu.sensors.metrics.buffer;
 
-import org.gundartsev.edu.sensors.domain.HourStatistic;
+import org.gundartsev.edu.sensors.domain.HourStatisticData;
 import org.gundartsev.edu.sensors.domain.metrics.StatisticSnapshot;
+import org.gundartsev.edu.sensors.domain.metrics.StatisticValue;
 
-public class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<HourStatistic>{
+class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<HourStatisticData>{
     private static final int MINUTES_IN_HOUR = 60;
-    private HourStatistic buffer;
+    private HourStatisticData buffer;
 
-    private RollingHourStatisticBufferEngine() {
+    RollingHourStatisticBufferEngine(HourStatisticData buffer) {
+        this.buffer = buffer;
     }
 
-    public static RollingHourStatisticBufferEngine engineForBuffer(HourStatistic buffer){
-        RollingHourStatisticBufferEngine engine = new RollingHourStatisticBufferEngine();
-        engine.buffer = buffer;
-        return engine;
-    }
     @Override
     public StatisticSnapshot accept(int minuteUTCId, int co2Level) {
         StatisticSnapshot snapshot = null;
@@ -27,8 +24,8 @@ public class RollingHourStatisticBufferEngine implements IRollingStatisticBuffer
         }
         // arrived data is for next hour. Finalization of open buffer and create a new one
         if (hourUTCId > buffer.getHourUTCId()) {
-            HourStatistic finalBuffer = finalizeBuffer();
-            buffer = new HourStatistic(hourUTCId, finalBuffer.getLastValue());
+            HourStatisticData finalBuffer = finalizeBuffer();
+            buffer = new HourStatisticData(hourUTCId, finalBuffer.getLastValue());
             snapshot = extractSnapshot(finalBuffer);
         }
         // arrived data is for a buffered hour or for a new hour which buffer is already created
@@ -42,13 +39,33 @@ public class RollingHourStatisticBufferEngine implements IRollingStatisticBuffer
         return snapshot;
     }
 
-    private HourStatistic finalizeBuffer() {
+    public StatisticValue calcBufferedStatisticFor(int periodId) {
+        if (buffer.getHourUTCId() == 0)
+           return null;
+        if (periodId >= buffer.getLastMinuteId()){
+            float accAvg = buffer.getAccAvgLevel();
+            int hourUTCId = periodId / MINUTES_IN_HOUR;
+            if (hourUTCId > buffer.getHourUTCId()){
+                int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
+                accAvg += buffer.getLastValue() * (float)remainingInterval / MINUTES_IN_HOUR;
+                !!!!!!!!!!!!!
+            }
+
+            int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
+
+            return
+        }
+        buffer.getLastMinuteId()
+        int
+    }
+
+    private HourStatisticData finalizeBuffer() {
         int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
         accumulateStatistic(buffer.getLastValue(), (byte) remainingInterval);
         return buffer;
     }
 
-    private StatisticSnapshot extractSnapshot(HourStatistic finalBuffer) {
+    private StatisticSnapshot extractSnapshot(HourStatisticData finalBuffer) {
         return StatisticSnapshot.builder()
                 .hourUTCId(finalBuffer.getHourUTCId())
                 .avgLevel(finalBuffer.getAccAvgLevel())
@@ -62,7 +79,7 @@ public class RollingHourStatisticBufferEngine implements IRollingStatisticBuffer
 
 
     @Override
-    public HourStatistic getBuffer() {
+    public HourStatisticData getBuffer() {
         return buffer;
     }
 }
