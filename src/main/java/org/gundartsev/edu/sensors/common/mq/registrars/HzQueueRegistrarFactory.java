@@ -5,12 +5,15 @@ import com.hazelcast.core.HazelcastInstance;
 import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.springframework.stereotype.Service;
 
+/**
+ * Produce registrars for HzC queues
+ */
 @Service
-public class QueueRegistrarFactory implements IQueueRegistrarFactory {
+public class HzQueueRegistrarFactory implements IQueueRegistrarFactory {
     private final HazelcastInstance hkInstance;
     IQueue<MeasurementData> measurementQueue;
 
-    public QueueRegistrarFactory(HazelcastInstance hazelcastInstance) {
+    public HzQueueRegistrarFactory(HazelcastInstance hazelcastInstance) {
         this.hkInstance = hazelcastInstance;
     }
 

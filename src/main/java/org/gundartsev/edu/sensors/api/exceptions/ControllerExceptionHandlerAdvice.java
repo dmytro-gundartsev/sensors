@@ -8,10 +8,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+/**
+ * Advicer to intercept and wrap all abnormal cases and produce proper {@link HttpStatus}
+ */
+
 @RestControllerAdvice
 public class ControllerExceptionHandlerAdvice {
     @ExceptionHandler
-    public final Mono<ResponseEntity> handleException(ServerWebExchange exchange, Exception exception) {
+    public final Mono<ResponseEntity<Object>> handleException(ServerWebExchange exchange, Exception exception) {
 
         if (exception instanceof SensorNotFoundException) {
             return Mono.just(ResponseEntity

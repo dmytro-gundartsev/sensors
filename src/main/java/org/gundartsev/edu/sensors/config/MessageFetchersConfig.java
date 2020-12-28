@@ -14,6 +14,9 @@ import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Configuration of all queues' fetchers
+ */
 @Slf4j
 @Configuration
 public class MessageFetchersConfig {
@@ -35,17 +38,17 @@ public class MessageFetchersConfig {
 
     @Bean
     IMessageFetcher<MeasurementData> getMeasurementFetcher() {
-        return createForQueue(CachingConfig.INCOMING_DATA_QUEUE, measurementService);
+        return createForQueue(IMDGStorageConfig.INCOMING_DATA_QUEUE, measurementService);
     }
 
     @Bean
     IMessageFetcher<AlertEvent> getAlertEventFetcher() {
-        return createForQueue(CachingConfig.ALERT_DATA_QUEUE, alertService);
+        return createForQueue(IMDGStorageConfig.ALERT_DATA_QUEUE, alertService);
     }
 
     @Bean
     IMessageFetcher<StatisticSnapshot> getStatisticSnapshotIMessageFetcherFetcher() {
-        return createForQueue(CachingConfig.STATISTIC_DATA_QUEUE, statisticService);
+        return createForQueue(IMDGStorageConfig.STATISTIC_DATA_QUEUE, statisticService);
     }
 
     private <T> IMessageFetcher<T> createForQueue(String queueName, IMessageConsumingService<T> service) {
@@ -56,6 +59,9 @@ public class MessageFetchersConfig {
         return messageFetcher;
     }
 
+    /**
+     * Graceful shutdown of the fetchers
+     */
     @PreDestroy
     void preDestroy() {
         this.messageFetchers.forEach(IMessageFetcher::stop);

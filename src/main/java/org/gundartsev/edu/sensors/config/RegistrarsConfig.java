@@ -18,17 +18,17 @@ public class RegistrarsConfig {
 
     @Bean
     IQueueItemRegistrar<MeasurementData> getMeasurementDataRegistrar() {
-        return factory.forQueue(CachingConfig.INCOMING_DATA_QUEUE);
+        return factory.forQueue(IMDGStorageConfig.INCOMING_DATA_QUEUE);
     }
 
     @Bean
     IQueueItemRegistrar<AlertEvent> getAlertEventRegistrar() {
-        return factory.forQueue(CachingConfig.ALERT_DATA_QUEUE);
+        return factory.forQueue(IMDGStorageConfig.ALERT_DATA_QUEUE);
     }
 
     @Bean
     IQueueItemRegistrar<StatisticSnapshot> getStatisticSnapshotRegistrar() {
-        return factory.forQueue(CachingConfig.STATISTIC_DATA_QUEUE);
+        return factory.forQueue(IMDGStorageConfig.STATISTIC_DATA_QUEUE);
     }
 
 }

@@ -2,9 +2,8 @@ package org.gundartsev.edu.sensors.metrics.buffer;
 
 import org.gundartsev.edu.sensors.domain.HourStatisticData;
 import org.gundartsev.edu.sensors.domain.metrics.StatisticSnapshot;
-import org.gundartsev.edu.sensors.domain.metrics.StatisticValue;
 
-class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<HourStatisticData>{
+class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<HourStatisticData> {
     private static final int MINUTES_IN_HOUR = 60;
     private HourStatisticData buffer;
 
@@ -18,7 +17,7 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
         int hourUTCId = minuteUTCId / MINUTES_IN_HOUR; // int dividing truncates
         byte currentMinuteId = (byte) (minuteUTCId % MINUTES_IN_HOUR);
         // init phase
-        if (buffer.getHourUTCId() == 0){
+        if (buffer.getHourUTCId() == 0) {
             buffer.setHourUTCId(hourUTCId);
             buffer.setLastValue(co2Level);
         }
@@ -30,7 +29,7 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
         }
         // arrived data is for a buffered hour or for a new hour which buffer is already created
         if (hourUTCId == buffer.getHourUTCId() && currentMinuteId >= buffer.getLastMinuteId()) {
-            byte interval = (byte)(currentMinuteId - buffer.getLastMinuteId());
+            byte interval = (byte) (currentMinuteId - buffer.getLastMinuteId());
             accumulateStatistic(co2Level, interval);
             buffer.setLastMinuteId(currentMinuteId);
             buffer.setLastValue(co2Level);
@@ -39,24 +38,14 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
         return snapshot;
     }
 
-    public StatisticValue calcBufferedStatisticFor(int periodId) {
-        if (buffer.getHourUTCId() == 0)
-           return null;
-        if (periodId >= buffer.getLastMinuteId()){
-            float accAvg = buffer.getAccAvgLevel();
-            int hourUTCId = periodId / MINUTES_IN_HOUR;
-            if (hourUTCId > buffer.getHourUTCId()){
-                int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
-                accAvg += buffer.getLastValue() * (float)remainingInterval / MINUTES_IN_HOUR;
-                !!!!!!!!!!!!!
-            }
-
-            int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
-
-            return
+    public StatisticSnapshot currentBufferSnapshot(int periodId) {
+        if (buffer.getHourUTCId() == 0 || periodId < buffer.getLastMinuteId()) {
+            return null;
         }
-        buffer.getLastMinuteId()
-        int
+        // getting current buffer statistic adjusted to the hour bounday
+        int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
+        float accAvg = buffer.getAccAvgLevel() + buffer.getLastValue() * (float) remainingInterval / MINUTES_IN_HOUR;
+        return StatisticSnapshot.builder().maxLevel(buffer.getMaxLevel()).avgLevel(accAvg).hourUTCId(buffer.getHourUTCId()).build();
     }
 
     private HourStatisticData finalizeBuffer() {
@@ -74,7 +63,7 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
 
     private void accumulateStatistic(int co2Level, byte interval) {
         buffer.setMaxLevel(Math.max(buffer.getMaxLevel(), co2Level));
-        buffer.setAccAvgLevel(buffer.getAccAvgLevel() + buffer.getLastValue() * (float)interval / MINUTES_IN_HOUR);
+        buffer.setAccAvgLevel(buffer.getAccAvgLevel() + buffer.getLastValue() * (float) interval / MINUTES_IN_HOUR);
     }
 
 

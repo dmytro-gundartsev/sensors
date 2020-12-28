@@ -4,7 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.gundartsev.edu.sensors.common.mq.fetchers.IMessageConsumingService;
 import org.gundartsev.edu.sensors.common.mq.registrars.IQueueItemRegistrar;
-import org.gundartsev.edu.sensors.config.CachingConfig;
+import org.gundartsev.edu.sensors.config.IMDGStorageConfig;
 import org.gundartsev.edu.sensors.domain.HourStatisticData;
 import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.gundartsev.edu.sensors.domain.SensorData;
@@ -35,7 +35,7 @@ public class SensorMeasurementService implements IMessageConsumingService<Measur
     public SensorMeasurementService(HazelcastInstance hzcInstance, IQueueItemRegistrar<StatisticSnapshot> statisticSnapshotRegistrar, IQueueItemRegistrar<AlertEvent> alertEventRegistrar, ISensorStatusStateMachineFactory stateMachineFactory, IRollingStatisticBufferEngineFactory statBufferEngineFactory) {
         this.statisticSnapshotRegistrar = statisticSnapshotRegistrar;
         this.alertEventRegistrar = alertEventRegistrar;
-        this.sensorDataMap = hzcInstance.getMap(CachingConfig.SENSOR_DATA_MAP_VALUE);
+        this.sensorDataMap = hzcInstance.getMap(IMDGStorageConfig.SENSOR_DATA_MAP);
         this.stateMachineFactory = stateMachineFactory;
         this.statBufferEngineFactory = statBufferEngineFactory;
     }

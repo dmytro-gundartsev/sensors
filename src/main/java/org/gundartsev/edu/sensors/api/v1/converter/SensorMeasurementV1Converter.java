@@ -5,6 +5,9 @@ import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+/**
+ * Convertor from dto {@link SensorDataDTO} of measurement into domain model {@link MeasurementData}
+ */
 @Component
 public class SensorMeasurementV1Converter implements Converter<SensorDataDTO, MeasurementData> {
     @Override

@@ -9,6 +9,5 @@ import java.time.OffsetDateTime;
 public class SensorDataDTO {
     @JsonProperty("co2")
     private int level;
-
     private OffsetDateTime time;
 }

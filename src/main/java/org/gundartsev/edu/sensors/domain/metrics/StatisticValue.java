@@ -8,6 +8,6 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class StatisticValue implements Serializable {
-    private int maxValue = 0;
-    private float avgValue = 0.0f;
+    private int maxValue;
+    private float avgValue;
 }

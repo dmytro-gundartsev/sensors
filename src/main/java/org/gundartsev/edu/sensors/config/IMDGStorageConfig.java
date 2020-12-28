@@ -8,18 +8,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CachingConfig {
-    public static String SENSOR_STATUS_MAP = "sensorStatus";
-    public static String STATISTIC_RINGS_MAP = "statisticRingsMap";
-    public static String SENSOR_DATA_MAP_VALUE = "sensorStatus";
-    public static String INCOMING_DATA_QUEUE = "measurementsQueue";
-    public static String ALERT_DATA_QUEUE = "alertEventQueue";
-    public static String STATISTIC_DATA_QUEUE = "statisticQueue";
+/**
+ * Configures of IMDG data storage, based on Hazelcast
+ */
+public class IMDGStorageConfig {
+    public static final String SENSOR_DATA_MAP = "sensorData";
+    public static final String METRIC_BUFFER_MAP = "metricBuffer";
+    public static final String ALERT_BUFFER_MAP = "alertBuffer";
+    public static final String INCOMING_DATA_QUEUE = "measurementsQueue";
+    public static final String ALERT_DATA_QUEUE = "alertEventQueue";
+    public static final String STATISTIC_DATA_QUEUE = "statisticQueue";
     @Bean
     public Config config (){
         return augmentConfig(Config.load());
     }
+
+    /**
+     * Augment default config of Hazelcast
+     * @param config default configuration (taken from hazelcast.xml)
+     * @return Augmented configuration with configs of queues and maps
+     */
     public Config augmentConfig(Config config) {
+        // duplicities here are for possible separate fine configuration of the queues and maps
         QueueConfig measureQueueConf = new QueueConfig(INCOMING_DATA_QUEUE)
                 .setBackupCount(1)
                 .setEmptyQueueTtl(-1)
@@ -32,21 +42,24 @@ public class CachingConfig {
                 .setBackupCount(1)
                 .setEmptyQueueTtl(-1)
                 .setAsyncBackupCount(0);
-        MapConfig statisticRingMapConfig = new MapConfig(STATISTIC_RINGS_MAP)
-                //    mapConfig.mapStoreConfig.isEnabled = true
+        MapConfig metricBufferMapConfig = new MapConfig(METRIC_BUFFER_MAP)
                 .setReadBackupData(false)
                 .setInMemoryFormat(InMemoryFormat.OBJECT)
                 .setAsyncBackupCount(1)
                 .setBackupCount(0);
-        MapConfig sensorStatusMapConfig = new MapConfig(SENSOR_STATUS_MAP)
-                //    mapConfig.mapStoreConfig.isEnabled = true
+        MapConfig sensorStatusMapConfig = new MapConfig(SENSOR_DATA_MAP)
                 .setReadBackupData(false)
                 .setInMemoryFormat(InMemoryFormat.OBJECT)
                 .setAsyncBackupCount(1)
                 .setBackupCount(0);
-        //mapConfig.mapStoreConfig.implementation = context.getBean("dataStoreMapStore")
-        config.addMapConfig(statisticRingMapConfig);
+        MapConfig alertBufferMapConfig = new MapConfig(ALERT_BUFFER_MAP)
+                .setReadBackupData(false)
+                .setInMemoryFormat(InMemoryFormat.OBJECT)
+                .setAsyncBackupCount(1)
+                .setBackupCount(0);
+        config.addMapConfig(metricBufferMapConfig);
         config.addMapConfig(sensorStatusMapConfig);
+        config.addMapConfig(alertBufferMapConfig);
         config.addQueueConfig(measureQueueConf);
         config.addQueueConfig(alertQueueConf);
         config.addQueueConfig(statisticQueueConf);
