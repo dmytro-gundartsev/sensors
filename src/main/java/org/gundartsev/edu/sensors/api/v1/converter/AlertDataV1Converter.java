@@ -1,9 +1,7 @@
 package org.gundartsev.edu.sensors.api.v1.converter;
 
 import org.gundartsev.edu.sensors.api.v1.model.AlertDTO;
-import org.gundartsev.edu.sensors.api.v1.model.SensorMetricsDTO;
 import org.gundartsev.edu.sensors.domain.alert.Alert;
-import org.gundartsev.edu.sensors.domain.metrics.StatisticValue;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

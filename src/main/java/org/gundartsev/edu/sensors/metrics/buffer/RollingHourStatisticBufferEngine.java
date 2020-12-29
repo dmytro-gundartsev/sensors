@@ -45,7 +45,7 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
         // getting current buffer statistic adjusted to the hour bounday
         int remainingInterval = MINUTES_IN_HOUR - (buffer.getLastMinuteId() % MINUTES_IN_HOUR);
         float accAvg = buffer.getAccAvgLevel() + buffer.getLastValue() * (float) remainingInterval / MINUTES_IN_HOUR;
-        return StatisticSnapshot.builder().maxLevel(buffer.getMaxLevel()).avgLevel(accAvg).hourUTCId(buffer.getHourUTCId()).build();
+        return StatisticSnapshot.builder().maxLevel(buffer.getMaxLevel()).avgLevel(accAvg).periodId(buffer.getHourUTCId()).build();
     }
 
     private HourStatisticData finalizeBuffer() {
@@ -56,7 +56,7 @@ class RollingHourStatisticBufferEngine implements IRollingStatisticBufferEngine<
 
     private StatisticSnapshot extractSnapshot(HourStatisticData finalBuffer) {
         return StatisticSnapshot.builder()
-                .hourUTCId(finalBuffer.getHourUTCId())
+                .periodId(finalBuffer.getHourUTCId())
                 .avgLevel(finalBuffer.getAccAvgLevel())
                 .maxLevel(finalBuffer.getMaxLevel()).build();
     }

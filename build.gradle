@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.4.1'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.30-M1'
 }
 
 group = 'org.gundartsev.edu'
@@ -16,6 +17,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 ext {
@@ -34,8 +36,24 @@ dependencies {
     compile "io.projectreactor:reactor-logback:${reactorLogbackVersion}"
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    testCompile "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    testCompile "org.junit.platform:junit-platform-engine:1.6.2"
+    testCompile "org.mockito:mockito-junit-jupiter:3.3.3"
+
 }
 
 test {
     useJUnitPlatform()
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

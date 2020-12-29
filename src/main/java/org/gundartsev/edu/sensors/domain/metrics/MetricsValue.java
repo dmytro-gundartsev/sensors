@@ -5,9 +5,13 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * And entity containing metrics values (max and average value)
+ */
+
 @Data
 @AllArgsConstructor
-public class StatisticValue implements Serializable {
+public class MetricsValue implements Serializable {
     private int maxValue;
     private float avgValue;
 }

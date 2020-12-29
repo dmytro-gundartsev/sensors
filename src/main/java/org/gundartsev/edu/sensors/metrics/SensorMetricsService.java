@@ -7,9 +7,9 @@ import org.gundartsev.edu.sensors.common.mq.fetchers.IMessageConsumingService;
 import org.gundartsev.edu.sensors.config.IMDGStorageConfig;
 import org.gundartsev.edu.sensors.domain.HourStatisticData;
 import org.gundartsev.edu.sensors.domain.SensorData;
-import org.gundartsev.edu.sensors.domain.metrics.MetricBuffer;
+import org.gundartsev.edu.sensors.domain.metrics.MetricsBuffer;
 import org.gundartsev.edu.sensors.domain.metrics.StatisticSnapshot;
-import org.gundartsev.edu.sensors.domain.metrics.StatisticValue;
+import org.gundartsev.edu.sensors.domain.metrics.MetricsValue;
 import org.gundartsev.edu.sensors.metrics.buffer.IRollingStatisticBufferEngine;
 import org.gundartsev.edu.sensors.metrics.buffer.IRollingStatisticBufferEngineFactory;
 import org.gundartsev.edu.sensors.metrics.buffer.RollingStatisticBufferEngineFactory;
@@ -25,7 +25,7 @@ public class SensorMetricsService implements IMessageConsumingService<StatisticS
     private static final int SECONDS_IN_HOUR = 60 * 60;
     // -1 means that the current hour is supposed
                                                                         // to be taken from current statistic buffer
-    private final IMap<UUID, MetricBuffer> metricBufferMap;
+    private final IMap<UUID, MetricsBuffer> metricBufferMap;
     private final IMap<UUID, SensorData> sensorDataMap;
     private final RollingStatisticBufferEngineFactory rollingStatisticBufferEngineFactory;
 
@@ -37,12 +37,12 @@ public class SensorMetricsService implements IMessageConsumingService<StatisticS
 
     @Override
     public void apply(StatisticSnapshot message) {
-        MetricBuffer buffer = metricBufferMap.getOrDefault(message.getSensorUUID(), new MetricBuffer(STATISTIC_METRIC_BUFFER_SIZE));
-        buffer.putAndRotate(message);
+        MetricsBuffer buffer = metricBufferMap.getOrDefault(message.getSensorUUID(), new MetricsBuffer(STATISTIC_METRIC_BUFFER_SIZE));
+        buffer.put(message);
         metricBufferMap.set(message.getSensorUUID(), buffer);
     }
 
-    public StatisticValue getMetrics(UUID sensorUUID) throws SensorNotFoundException{
+    public MetricsValue getMetrics(UUID sensorUUID) throws SensorNotFoundException{
         int currentHourId = currentUTCHourId();
         StatisticSnapshot currentBufferedValues = null;
         if (sensorDataMap.containsKey(sensorUUID)) {
@@ -51,11 +51,11 @@ public class SensorMetricsService implements IMessageConsumingService<StatisticS
             currentBufferedValues = engine.currentBufferSnapshot(currentHourId);
         }
         if (metricBufferMap.containsKey(sensorUUID)) {
-            MetricBuffer metricBuffer = metricBufferMap.get(sensorUUID);
-            return metricBuffer.getStatistic(currentBufferedValues, currentHourId);
+            MetricsBuffer metricsBuffer = metricBufferMap.get(sensorUUID);
+            return metricsBuffer.getStatistic(currentBufferedValues, currentHourId);
         }
         if (currentBufferedValues != null){
-            return new StatisticValue(currentBufferedValues.getMaxLevel(), currentBufferedValues.getAvgLevel());
+            return new MetricsValue(currentBufferedValues.getMaxLevel(), currentBufferedValues.getAvgLevel());
         } else {
             throw new SensorNotFoundException(sensorUUID);
         }

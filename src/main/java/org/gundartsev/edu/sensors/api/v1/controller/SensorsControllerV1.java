@@ -8,7 +8,7 @@ import org.gundartsev.edu.sensors.api.v1.model.SensorStatusDTO;
 import org.gundartsev.edu.sensors.common.mq.registrars.IQueueItemRegistrar;
 import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.gundartsev.edu.sensors.domain.StatusData;
-import org.gundartsev.edu.sensors.domain.metrics.StatisticValue;
+import org.gundartsev.edu.sensors.domain.metrics.MetricsValue;
 import org.gundartsev.edu.sensors.metrics.ISensorMetricsService;
 import org.gundartsev.edu.sensors.status.ISensorStatusService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,7 +102,7 @@ public class SensorsControllerV1 {
     )
     public Mono<SensorMetricsDTO> getSensorMetricsFor30Days(@PathVariable("uuid") UUID uuid) {
         return Mono.fromCallable(() -> {
-            StatisticValue value = metricsService.getMetrics(uuid);
+            MetricsValue value = metricsService.getMetrics(uuid);
             SensorMetricsDTO dto = conversionService.convert(value, SensorMetricsDTO.class);
             Objects.requireNonNull(dto, "Improbable data conversion problem to [SensorMetricsDTO]");
             return dto;
