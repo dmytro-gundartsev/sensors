@@ -125,7 +125,7 @@ public class MetricsBuffer implements Serializable {
      * @throws IllegalArgumentException Happens when attempted NOW moment (reportPeriodId) lies in the "past" of
      *                                  registered snapshots so statistic cannot be produced properly
      */
-    public MetricsValue getStatistic(@Nullable StatisticSnapshot augmentedCurrentBuffer, int reportPeriodId) throws IllegalArgumentException {
+    public MetricsValue calculate(@Nullable StatisticSnapshot augmentedCurrentBuffer, int reportPeriodId) throws IllegalArgumentException {
         if (reportPeriodId < lastPeriodId()) {
             throw new IllegalArgumentException("Reporting moment cannot be in the past comparing to the last received snapshot");
         }

@@ -19,7 +19,11 @@ class SensorStatusStateMachine implements ISensorStatusStateMachine{
     }
 
     @Override
-    public AlertEventEnum accept(int co2Level, OffsetDateTime time) {
+    public AlertEventEnum evaluate(int co2Level, OffsetDateTime dateTime) {
+        if (statusData.getLatestMeasurementTime() != null && statusData.getLatestMeasurementTime().isAfter(dateTime)){
+            throw new IllegalArgumentException("Sensor sent older measurement as for ["+dateTime+"] while having" +
+                    "already registered data for ["+ statusData.getLatestMeasurementTime() +"]");
+        }
         AlertEventEnum alertEvent = null;
         int statCounter = statusData.getStatusCounter();
         StatusEnum status = statusData.getStatus();
@@ -56,8 +60,8 @@ class SensorStatusStateMachine implements ISensorStatusStateMachine{
         }
         statusData.setStatus(status);
         statusData.setStatusCounter((byte)statCounter);
-        statusData.setLatestUTCMinuteId(calculateUTCMinuteId(time));
-        statusData.setLatestMeasurementTime(time);
+        statusData.setLatestUTCMinuteId(calculateUTCMinuteId(dateTime));
+        statusData.setLatestMeasurementTime(dateTime);
         return alertEvent;
     }
 

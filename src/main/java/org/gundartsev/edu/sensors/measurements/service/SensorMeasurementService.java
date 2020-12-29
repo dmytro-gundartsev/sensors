@@ -2,6 +2,7 @@ package org.gundartsev.edu.sensors.measurements.service;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import lombok.extern.slf4j.Slf4j;
 import org.gundartsev.edu.sensors.common.mq.fetchers.IMessageConsumingService;
 import org.gundartsev.edu.sensors.common.mq.registrars.IQueueItemRegistrar;
 import org.gundartsev.edu.sensors.config.IMDGStorageConfig;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import static org.gundartsev.edu.sensors.metrics.buffer.IRollingStatisticBufferEngineFactory.BufferedTimeHorizon.HOUR;
 
 @Service
+@Slf4j
 public class SensorMeasurementService implements IMessageConsumingService<MeasurementData> {
 
     private final IMap<UUID, SensorData> sensorDataMap;
@@ -44,7 +46,7 @@ public class SensorMeasurementService implements IMessageConsumingService<Measur
     public void apply(MeasurementData measurement) {
         SensorData sensorData = sensorDataMap.getOrDefault(measurement.getUuid(), new SensorData());
         sensorData.setStatusData(
-                updateStatus(sensorData.getStatusData(), measurement.getLevel(), measurement.getTime()));
+                updateStatus(measurement.getUuid(), sensorData.getStatusData(), measurement.getLevel(), measurement.getTime()));
         sensorData.setRollingHourStatistic(
                 rollingStatistic(measurement.getUuid(),
                         sensorData.getRollingHourStatistic(),
@@ -53,13 +55,18 @@ public class SensorMeasurementService implements IMessageConsumingService<Measur
         sensorDataMap.set(measurement.getUuid(), sensorData);
     }
 
-    private StatusData updateStatus(StatusData data, int levelCo2, OffsetDateTime time) {
+    private StatusData updateStatus(UUID sensorUUID, StatusData data, int levelCo2, OffsetDateTime time) {
         ISensorStatusStateMachine stateMachine = stateMachineFactory.forStatus(data);
-        AlertEventEnum alertEvent = stateMachine.accept(levelCo2, time);
-        if (alertEvent != null) {
-            alertEventRegistrar.register(new AlertEvent(time, alertEvent, levelCo2));
+        try {
+            AlertEventEnum alertEvent = stateMachine.evaluate(levelCo2, time);
+            if (alertEvent != null) {
+                alertEventRegistrar.register(new AlertEvent(time, alertEvent, levelCo2));
+            }
+            return stateMachine.status();
+        } catch (IllegalArgumentException ex) {
+            log.warn("Non-consequent measurement arrival for sensor [{}]. Status won't be updated",sensorUUID);
+            return data;
         }
-        return stateMachine.status();
     }
 
 

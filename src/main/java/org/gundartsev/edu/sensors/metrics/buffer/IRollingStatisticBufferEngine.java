@@ -7,5 +7,5 @@ public interface IRollingStatisticBufferEngine<T> {
     StatisticSnapshot accept(int periodUTCId, int co2Level);
     T getBuffer();
     @Nullable
-    StatisticSnapshot currentBufferSnapshot(int periodId);
+    StatisticSnapshot currentBufferSnapshot();
 }

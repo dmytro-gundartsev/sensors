@@ -48,11 +48,11 @@ public class SensorMetricsService implements IMessageConsumingService<StatisticS
         if (sensorDataMap.containsKey(sensorUUID)) {
             SensorData sensorData = sensorDataMap.get(sensorUUID);
             IRollingStatisticBufferEngine<HourStatisticData> engine = rollingStatisticBufferEngineFactory.getEngine(IRollingStatisticBufferEngineFactory.BufferedTimeHorizon.HOUR, sensorData.getRollingHourStatistic());
-            currentBufferedValues = engine.currentBufferSnapshot(currentHourId);
+            currentBufferedValues = engine.currentBufferSnapshot();
         }
         if (metricBufferMap.containsKey(sensorUUID)) {
             MetricsBuffer metricsBuffer = metricBufferMap.get(sensorUUID);
-            return metricsBuffer.getStatistic(currentBufferedValues, currentHourId);
+            return metricsBuffer.calculate(currentBufferedValues, currentHourId);
         }
         if (currentBufferedValues != null){
             return new MetricsValue(currentBufferedValues.getMaxLevel(), currentBufferedValues.getAvgLevel());

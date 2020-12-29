@@ -20,7 +20,7 @@ internal class MetricsBufferTest {
      * Test that coming snapshot to be ordered by decreasing period(hour)Id.
      */
     @Test
-    fun testOrederingByPeriodIdInPersistentStructure() {
+    fun testOrderingByPeriodIdInPersistentStructure() {
         val buffer = MetricsBuffer(10)
         buffer.put(snapshot(2100.0f, 2100, 100))
         assertEquals(2100f, buffer.avgLevels[0])
@@ -53,13 +53,25 @@ internal class MetricsBufferTest {
      */
     @Test
     fun testBufferTrimmingOldValues() {
-        val buffer = MetricsBuffer(6) // buffer is supposed to keep upto 5 hours values for (last 6 hours) calc.
+        val buffer = MetricsBuffer(6) // buffer is supposed to keep upto 6 hours values for (last 6 hours) calc.
         buffer.put(snapshot(2100.0f, 2100, 100))
         buffer.put(snapshot(2300.0f, 2300, 101))
         buffer.put(snapshot(2100.0f, 2100, 106))
         assertEquals(2, buffer.periodIds.size)
+        assertEquals(6, buffer.maxPeriodSize)
     }
 
+    /**
+     * Test buffer rejecting statistic calculation for time period, which lies in the "past" for buffer.
+     * MetricsBuffer is supposed to contain older or current data. So calculation time comparing to the buffer data
+     * has to be for now or for the future
+     */
+    @Test
+    fun testBufferRejectingStatisticCalcForCorruptedSequence(){
+        val buffer = MetricsBuffer(6)
+        buffer.put(snapshot(2100.0f, 2100, 100))
+        assertThrows<java.lang.IllegalArgumentException> {  buffer.calculate(null, 99)}
+    }
     /**
      * Statistic calculation test.
      * Scenario #1: Unlikely scenario of calculating statistic for sensor with no measurements received so far.
@@ -70,7 +82,7 @@ internal class MetricsBufferTest {
     @Test
     fun testStatisticScenario1() {
         val buffer = MetricsBuffer(1)
-        val value = buffer.getStatistic(null, 100)
+        val value = buffer.calculate(null, 100)
         assertEquals(0.0f, value.avgValue)
         assertEquals(0, value.maxValue)
     }
@@ -86,7 +98,7 @@ internal class MetricsBufferTest {
     @Test
     fun testStatisticScenario2() {
         val buffer = MetricsBuffer(720)
-        val value = buffer.getStatistic(snapshot(2100.0f, 2100, 100), 100)
+        val value = buffer.calculate(snapshot(2100.0f, 2100, 100), 100)
         assertEquals(2100.0f, value.avgValue)
         assertEquals(2100, value.maxValue)
     }
@@ -104,7 +116,7 @@ internal class MetricsBufferTest {
     fun testStatisticScenario3() {
         val buffer = MetricsBuffer(720)
         buffer.put(snapshot(2200.0f, 2200, 100))
-        val value = buffer.getStatistic(snapshot(2100.0f, 2100, 103), 103)
+        val value = buffer.calculate(snapshot(2100.0f, 2100, 103), 103)
         assertEquals(2175f, value.avgValue)
         assertEquals(2200, value.maxValue)
     }
@@ -123,7 +135,7 @@ internal class MetricsBufferTest {
         val buffer = MetricsBuffer(720)
         buffer.put(snapshot(2200.0f, 2200, 100))
         buffer.put(snapshot(2100.0f, 2100, 102))
-        val value = buffer.getStatistic(snapshot(2000.0f, 2000, 104), 105)
+        val value = buffer.calculate(snapshot(2000.0f, 2000, 104), 105)
         assertEquals(2100.0f, value.avgValue)
         assertEquals(2200, value.maxValue)
     }
@@ -146,7 +158,7 @@ internal class MetricsBufferTest {
         buffer.put(snapshot(2100.0f, 2100, 101))
         buffer.put(snapshot(1800.0f, 1800, 102))
         buffer.put(snapshot(1600.0f, 2900, 103))
-        val value = buffer.getStatistic(snapshot(2000.0f, 2000, 104), 104)
+        val value = buffer.calculate(snapshot(2000.0f, 2000, 104), 104)
         assertEquals(1940.0f, value.avgValue)
         assertEquals(2900, value.maxValue)
     }
@@ -176,7 +188,7 @@ internal class MetricsBufferTest {
         buffer.put(snapshot(2500.0f, 4000, "2020-12-01T04:00:00"))
         buffer.put(snapshot(2000.0f, 2000, "2020-12-13T10:00:00"))
         buffer.put(snapshot(1500.0f, 1500, "2020-12-20T14:00:00"))
-        val value = buffer.getStatistic(
+        val value = buffer.calculate(
                 snapshot(2140.0f, 2100, "2020-12-31T15:00:00"),
                 hourIdFor("2020-12-31T15:05:34"))
         assertEquals(2012f, value.avgValue)

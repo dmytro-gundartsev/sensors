@@ -17,17 +17,19 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap'}
 }
 
 ext {
     hazelcastVersion = '4.1'
     reactorLogbackVersion = '2.0.8.RELEASE'
-    reactorLogbackVersion = '2.0.8.RELEASE'
+    testingMockitoKotlinVersion = '1.6.0'
+    validationApiVersion = '2.0.1.Final'
 }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     compileOnly 'org.projectlombok:lombok'
+    compile "org.springframework.boot:spring-boot-starter-validation"
     compile "org.springframework.boot:spring-boot-starter-webflux"
     compile "com.hazelcast:hazelcast:${hazelcastVersion}"
     compile "ch.qos.logback:logback-classic:1.2.3"
@@ -40,6 +42,8 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.7.0"
     testCompile "org.junit.platform:junit-platform-engine:1.6.2"
     testCompile "org.mockito:mockito-junit-jupiter:3.3.3"
+    testCompile "com.nhaarman:mockito-kotlin:${testingMockitoKotlinVersion}"
+
 
 }
 

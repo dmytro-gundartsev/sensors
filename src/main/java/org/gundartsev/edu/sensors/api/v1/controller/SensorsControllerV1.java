@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
+import javax.validation.Valid;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -58,7 +59,7 @@ public class SensorsControllerV1 {
             produces = {"application/json"},
             consumes = {"application/json"}
     )
-    public Mono<Void> acceptMeasures(@PathVariable("uuid") UUID uuid, @RequestBody Mono<SensorDataDTO> sensorData) {
+    public Mono<Void> acceptMeasures(@PathVariable("uuid") UUID uuid, @RequestBody @Valid Mono<SensorDataDTO> sensorData) {
         return sensorData.doOnSuccess(data -> {
                     MeasurementData sData = conversionService.convert(data, MeasurementData.class);
                     Objects.requireNonNull(sData, "Improbable data conversion problem to [MeasurementData]");
