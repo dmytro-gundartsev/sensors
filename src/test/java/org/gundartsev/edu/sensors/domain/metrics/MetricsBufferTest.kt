@@ -1,10 +1,9 @@
 package org.gundartsev.edu.sensors.domain.metrics
 
+import org.gundartsev.edu.sensors.hourId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 internal class MetricsBufferTest {
     /**
@@ -67,11 +66,12 @@ internal class MetricsBufferTest {
      * has to be for now or for the future
      */
     @Test
-    fun testBufferRejectingStatisticCalcForCorruptedSequence(){
+    fun testBufferRejectingStatisticCalcForCorruptedSequence() {
         val buffer = MetricsBuffer(6)
         buffer.put(snapshot(2100.0f, 2100, 100))
-        assertThrows<java.lang.IllegalArgumentException> {  buffer.calculate(null, 99)}
+        assertThrows<java.lang.IllegalArgumentException> { buffer.calculate(null, 99) }
     }
+
     /**
      * Statistic calculation test.
      * Scenario #1: Unlikely scenario of calculating statistic for sensor with no measurements received so far.
@@ -190,7 +190,7 @@ internal class MetricsBufferTest {
         buffer.put(snapshot(1500.0f, 1500, "2020-12-20T14:00:00"))
         val value = buffer.calculate(
                 snapshot(2140.0f, 2100, "2020-12-31T15:00:00"),
-                hourIdFor("2020-12-31T15:05:34"))
+                hourId("2020-12-31T15:05:34"))
         assertEquals(2012f, value.avgValue)
         assertEquals(4000, value.maxValue)
     }
@@ -198,11 +198,7 @@ internal class MetricsBufferTest {
     private fun snapshot(avgLevel: Float, maxLevel: Int, hourId: Int) =
             StatisticSnapshot(null, hourId, avgLevel, maxLevel)
 
-    private fun hourIdFor(offsetdataTime: String) =
-            (OffsetDateTime.parse("$offsetdataTime+00:00")
-                    .withOffsetSameInstant(ZoneOffset.UTC).toEpochSecond() / (60 * 60)).toInt()
-
     private fun snapshot(avgLevel: Float, maxLevel: Int, dateTime: String) =
-            snapshot(avgLevel, maxLevel, hourIdFor(dateTime))
+            StatisticSnapshot(null, hourId(dateTime), avgLevel, maxLevel)
 
 }

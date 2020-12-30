@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 public class SensorDataDTO {
     @JsonProperty("co2")
     @Min(0)
-    @Max(1000) // I believe it's reasonable upper limit
+    @Max(100_000) // I believe it's reasonable upper limit
     private int level;
     private OffsetDateTime time;
 }

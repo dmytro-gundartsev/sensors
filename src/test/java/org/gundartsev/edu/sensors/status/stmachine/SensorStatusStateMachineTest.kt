@@ -1,5 +1,6 @@
 package org.gundartsev.edu.sensors.status.stmachine
 
+import org.gundartsev.edu.sensors.dateTime
 import org.gundartsev.edu.sensors.domain.StatusData
 import org.gundartsev.edu.sensors.domain.StatusEnum
 import org.gundartsev.edu.sensors.domain.alert.AlertEventEnum
@@ -15,10 +16,10 @@ internal class SensorStatusStateMachineTest {
     @Test
     fun smokeTestOfBasicValuesUpdate() {
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.OK, null, 1, 0))
-        stMachine.evaluate(100, offsetDT("2020-12-30T15:14:00"))
+        stMachine.evaluate(100, dateTime("2020-12-30T15:14:00"))
         val stData = stMachine.status()
-        assertEquals(offsetDT("2020-12-30T15:14:00"), stData.latestMeasurementTime)
-        assertEquals((offsetDT("2020-12-30T15:14:00").withOffsetSameInstant(ZoneOffset.UTC).toEpochSecond() / 60).toInt(), stData.latestUTCMinuteId)
+        assertEquals(dateTime("2020-12-30T15:14:00"), stData.latestMeasurementTime)
+        assertEquals((dateTime("2020-12-30T15:14:00").withOffsetSameInstant(ZoneOffset.UTC).toEpochSecond() / 60).toInt(), stData.latestUTCMinuteId)
         assertEquals(StatusEnum.OK, stData.status)
         assertEquals(0, stData.statusCounter)
     }
@@ -30,7 +31,7 @@ internal class SensorStatusStateMachineTest {
     fun testOkToWarnTransition(){
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.OK, null, 1, 0))
         assertEquals( StatusEnum.OK, stMachine.status().status)
-        stMachine.evaluate(2100, offsetDT("2020-12-30T15:14:00"))
+        stMachine.evaluate(2100, dateTime("2020-12-30T15:14:00"))
         assertEquals( StatusEnum.WARN, stMachine.status().status)
     }
 
@@ -41,7 +42,7 @@ internal class SensorStatusStateMachineTest {
     fun testWarnToOkTransition(){
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.WARN, null, 1, 0))
         assertEquals( StatusEnum.WARN, stMachine.status().status)
-        stMachine.evaluate(2000, offsetDT("2020-12-30T15:14:00"))
+        stMachine.evaluate(2000, dateTime("2020-12-30T15:14:00"))
         assertEquals( StatusEnum.OK, stMachine.status().status)
     }
 
@@ -52,11 +53,11 @@ internal class SensorStatusStateMachineTest {
     fun testOkToAlertTransition(){
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.OK, null, 1, 0))
         assertEquals( StatusEnum.OK, stMachine.status().status)
-        stMachine.evaluate(2200, offsetDT("2020-12-30T15:14:00"))
+        stMachine.evaluate(2200, dateTime("2020-12-30T15:14:00"))
         assertEquals( StatusEnum.WARN, stMachine.status().status)
-        stMachine.evaluate(2300, offsetDT("2020-12-30T15:15:00"))
+        stMachine.evaluate(2300, dateTime("2020-12-30T15:15:00"))
         assertEquals( StatusEnum.WARN, stMachine.status().status)
-        assertEquals(AlertEventEnum.START_ALERT, stMachine.evaluate(2400, offsetDT("2020-12-30T15:16:00")))
+        assertEquals(AlertEventEnum.START_ALERT, stMachine.evaluate(2400, dateTime("2020-12-30T15:16:00")))
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
     }
 
@@ -66,13 +67,13 @@ internal class SensorStatusStateMachineTest {
     @Test
     fun testAlertToToAlertTransition(){
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.ALERT, null, 1, 3))
-        assertNull(stMachine.evaluate(1200, offsetDT("2020-12-30T15:14:00")))
+        assertNull(stMachine.evaluate(1200, dateTime("2020-12-30T15:14:00")))
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
         assertEquals( 2, stMachine.status().statusCounter)
-        assertNull(stMachine.evaluate(1200, offsetDT("2020-12-30T15:15:00")))
+        assertNull(stMachine.evaluate(1200, dateTime("2020-12-30T15:15:00")))
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
         assertEquals( 1, stMachine.status().statusCounter)
-        stMachine.evaluate(2200, offsetDT("2020-12-30T15:16:00"))!!
+        stMachine.evaluate(2200, dateTime("2020-12-30T15:16:00"))!!
                 .also { assertEquals(AlertEventEnum.ALERT, it) }
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
         assertEquals( 3, stMachine.status().statusCounter)
@@ -84,15 +85,14 @@ internal class SensorStatusStateMachineTest {
     @Test
     fun testAlertToOKTransition(){
         val stMachine = SensorStatusStateMachine(StatusData(StatusEnum.ALERT, null, 1, 3))
-        assertNull(stMachine.evaluate(1200, offsetDT("2020-12-30T15:14:00")))
+        assertNull(stMachine.evaluate(1200, dateTime("2020-12-30T15:14:00")))
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
         assertEquals( 2, stMachine.status().statusCounter)
-        assertNull(stMachine.evaluate(1200, offsetDT("2020-12-30T15:15:00")))
+        assertNull(stMachine.evaluate(1200, dateTime("2020-12-30T15:15:00")))
         assertEquals( StatusEnum.ALERT, stMachine.status().status)
         assertEquals( 1, stMachine.status().statusCounter)
-        stMachine.evaluate(1100, offsetDT("2020-12-30T15:16:00"))!!
+        stMachine.evaluate(1100, dateTime("2020-12-30T15:16:00"))!!
                 .also { assertEquals(AlertEventEnum.STOP_ALERT, it) }
         assertEquals( StatusEnum.OK, stMachine.status().status)
     }
-    private fun offsetDT(str: String) = OffsetDateTime.parse("$str+00:00")
 }
