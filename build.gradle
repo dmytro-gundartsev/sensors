@@ -24,6 +24,7 @@ ext {
     hazelcastVersion = '4.1'
     reactorLogbackVersion = '2.0.8.RELEASE'
     testingMockitoKotlinVersion = '1.6.0'
+    testingMockitoApiVersion = '3.4.4'
     validationApiVersion = '2.0.1.Final'
 }
 dependencies {
@@ -41,9 +42,9 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.7.0"
     testCompile "org.junit.platform:junit-platform-engine:1.6.2"
-    testCompile "org.mockito:mockito-junit-jupiter:3.3.3"
+    testCompile "org.mockito:mockito-junit-jupiter:${testingMockitoApiVersion}"
+    testCompile "org.mockito:mockito-inline:${testingMockitoApiVersion}"
     testCompile "com.nhaarman:mockito-kotlin:${testingMockitoKotlinVersion}"
-
 
 }
 

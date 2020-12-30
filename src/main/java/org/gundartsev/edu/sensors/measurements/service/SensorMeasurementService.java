@@ -1,11 +1,9 @@
 package org.gundartsev.edu.sensors.measurements.service;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import lombok.extern.slf4j.Slf4j;
 import org.gundartsev.edu.sensors.common.mq.fetchers.IMessageConsumingService;
 import org.gundartsev.edu.sensors.common.mq.registrars.IQueueItemRegistrar;
-import org.gundartsev.edu.sensors.config.IMDGStorageConfig;
 import org.gundartsev.edu.sensors.domain.HourStatisticData;
 import org.gundartsev.edu.sensors.domain.MeasurementData;
 import org.gundartsev.edu.sensors.domain.SensorData;
@@ -24,6 +22,9 @@ import java.util.UUID;
 
 import static org.gundartsev.edu.sensors.metrics.buffer.IRollingStatisticBufferEngineFactory.BufferedTimeHorizon.HOUR;
 
+/**
+ * Service responsible for ingesting MeasurementDat message and update status and current hour buffer
+ */
 @Service
 @Slf4j
 public class SensorMeasurementService implements IMessageConsumingService<MeasurementData> {
@@ -34,10 +35,14 @@ public class SensorMeasurementService implements IMessageConsumingService<Measur
     private final ISensorStatusStateMachineFactory stateMachineFactory;
     private final IRollingStatisticBufferEngineFactory statBufferEngineFactory;
 
-    public SensorMeasurementService(HazelcastInstance hzcInstance, IQueueItemRegistrar<StatisticSnapshot> statisticSnapshotRegistrar, IQueueItemRegistrar<AlertEvent> alertEventRegistrar, ISensorStatusStateMachineFactory stateMachineFactory, IRollingStatisticBufferEngineFactory statBufferEngineFactory) {
+    public SensorMeasurementService(IMap<UUID, SensorData> dataMap,
+                                    IQueueItemRegistrar<StatisticSnapshot> statisticSnapshotRegistrar,
+                                    IQueueItemRegistrar<AlertEvent> alertEventRegistrar,
+                                    ISensorStatusStateMachineFactory stateMachineFactory,
+                                    IRollingStatisticBufferEngineFactory statBufferEngineFactory) {
         this.statisticSnapshotRegistrar = statisticSnapshotRegistrar;
         this.alertEventRegistrar = alertEventRegistrar;
-        this.sensorDataMap = hzcInstance.getMap(IMDGStorageConfig.SENSOR_DATA_MAP);
+        this.sensorDataMap = dataMap;
         this.stateMachineFactory = stateMachineFactory;
         this.statBufferEngineFactory = statBufferEngineFactory;
     }
@@ -64,7 +69,7 @@ public class SensorMeasurementService implements IMessageConsumingService<Measur
             }
             return stateMachine.status();
         } catch (IllegalArgumentException ex) {
-            log.warn("Non-consequent measurement arrival for sensor [{}]. Status won't be updated",sensorUUID);
+            log.warn("Non-consequent measurement arrival for sensor [{}]. Status won't be updated", sensorUUID);
             return data;
         }
     }

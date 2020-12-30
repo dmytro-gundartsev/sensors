@@ -1,10 +1,9 @@
 package org.gundartsev.edu.sensors.metrics.buffer
 
 import org.gundartsev.edu.sensors.domain.HourStatisticData
+import org.gundartsev.edu.sensors.hourId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 internal class RollingHourStatisticBufferEngineTest {
 
@@ -88,10 +87,10 @@ internal class RollingHourStatisticBufferEngineTest {
      */
     @Test
     fun testHourStatGetBufferSnapshot() {
-        val engine = RollingHourStatisticBufferEngine(HourStatisticData(hourIdFor("2020-12-31T15:32:12"), 25, 2400, 200f, 2400))
+        val engine = RollingHourStatisticBufferEngine(HourStatisticData(hourId("2020-12-31T15:32:12"), 25, 2400, 200f, 2400))
         val curSnapshot = engine.currentBufferSnapshot()
         assertNotNull(curSnapshot)
-        assertEquals(hourIdFor("2020-12-31T15:32:12"), curSnapshot!!.periodId)
+        assertEquals(hourId("2020-12-31T15:32:12"), curSnapshot!!.periodId)
         assertEquals(1600f, curSnapshot.avgLevel)
         assertEquals(2400, curSnapshot.maxLevel)
     }
@@ -104,8 +103,5 @@ internal class RollingHourStatisticBufferEngineTest {
         val engine = RollingHourStatisticBufferEngine(HourStatisticData())
         assertNull(engine.currentBufferSnapshot())
     }
-
-    private fun hourIdFor(offsetDataTime: String) = (OffsetDateTime.parse("$offsetDataTime+00:00")
-            .withOffsetSameInstant(ZoneOffset.UTC).toEpochSecond() / 3600).toInt()
 
 }
